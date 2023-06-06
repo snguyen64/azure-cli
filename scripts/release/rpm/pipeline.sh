@@ -15,6 +15,17 @@ set -exv
 
 CLI_VERSION=`cat src/azure-cli/azure/cli/__main__.py | grep __version__ | sed s/' '//g | sed s/'__version__='// |  sed s/\"//g`
 
+ls -R -l
+
+# Remove all files' group write permission, to mitigate an Azure DevOps issue that git cloned files have unexpected
+# group write permission: -rw-rw-r--. Non-py files such as
+# /usr/lib64/az/lib/python3.9/site-packages/azure/cli/core/auth/landing_pages/success.html
+# will inherit the incorrect permission -rw-rw-r-- in the RPM package.
+# We remove others write permission at the same time just in case.
+chmod -R go-w .
+
+ls -R -l
+
 # Create a container image that includes the source code and a built RPM using this file.
 docker build \
     --target build-env \
